@@ -31,8 +31,6 @@ def main():
 			try:
 				operation_type = int(input_string)
 
-				print(operation_type)
-
 				if operation_type == 1 or operation_type == 2:
 					input_is_valid = True
 			except:
@@ -44,18 +42,18 @@ def main():
 
 		if os.path.isfile(path_1) and os.path.isfile(path_2):
 			if operation_type == 2:
-				compare_files(path_1, path_2)
+				print(compare_files(path_1, path_2))
 			else:
 				print("Invalid operation.")
 		elif os.path.isdir(path_1) and os.path.isdir(path_2):
 			if operation_type == 1:
-				compare_dirs_similarities(path_1, path_2)
+				print(compare_dirs_similarities(path_1, path_2))
 			elif operation_type == 2:
-				compare_dirs_differences(path_1, path_2)
+				print(compare_dirs_differences(path_1, path_2))
 			else:
 				print("Invalid operation.")
 		elif os.path.isdir(path_1) and path_2 == "":
-			compare_dirs_similarities(path_1)
+			print(compare_dir_duplicates(path_1))
 		else:
 			print("Can't compare file and directory.")
 

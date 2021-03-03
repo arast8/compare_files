@@ -8,17 +8,17 @@ def compare_files(path_1, path_2):
 	files_match = filecmp.cmp(path_1, path_2)
 
 	if files_match:
-		print("Files match.")
+		return "Files match."
 	else:
-		print("Files do not match.")
+		return "Files do not match."
 
 def compare_dirs_differences(path_1, path_2):
 	report = compare_dirs_differences_recurse(path_1, path_2).lstrip("\n")
 
 	if report == "":
-		print("Directories are identical.")
-	else:
-		print(report)
+		report = "Directories are identical."
+
+	return report
 
 def compare_dirs_differences_recurse(path_1, path_2):
 	# dir_comp = filecmp.dircmp(path_1, path_2)
@@ -58,14 +58,13 @@ def compare_dirs_differences_recurse(path_1, path_2):
 
 	return report
 
-def compare_dirs_similarities(search_dir):
+def compare_dir_duplicates(search_dir):
 	"""
-	Prints search_dir, then searches search_dir for duplicate files, printing
-	the names of any duplicates.
+	Searches search_dir for duplicate files.
 	"""
 
+	report = ""
 	file_list = os.listdir(search_dir)
-	total_duplicates = 0
 	i = 0
 
 	while i < len(file_list):
@@ -78,22 +77,22 @@ def compare_dirs_similarities(search_dir):
 			file_j_path = os.path.join(search_dir, file_j_name)
 
 			if filecmp.cmp(file_i_path, file_j_path):
-				print("\t" + file_i_name + " = " + file_j_name)
-
-				total_duplicates += 1
+				report += f"\n{file_i_name} = {file_j_name}"
 
 		i += 1
 
-	if total_duplicates == 0:
-		print("No duplicates.")
+	if report == "":
+		report = "No duplicates."
+
+	return report.lstrip("\n")
 
 def compare_dirs_similarities(path_1, path_2):
 	report = compare_dirs_similarities_recurse(path_1, path_2).lstrip("\n")
 
 	if report == "":
-		print("The directories have nothing in common.")
-	else:
-		print(report)
+		report = "The directories have nothing in common."
+
+	return report
 
 def compare_dirs_similarities_recurse(path_1, path_2):
 	path_1_list = os.listdir(path_1)
