@@ -1,5 +1,7 @@
 # Author: Andrew Rast
-# Date: 03/01/2021
+# Date: 05/03/2021
+#
+# File and directory comparison algorithms
 
 import os
 import filecmp
@@ -60,24 +62,21 @@ def compare_dirs_differences_recurse(path_1, path_2):
 
 def compare_dir_duplicates(search_dir):
 	"""
-	Searches search_dir for duplicate files.
+	Searches search_dir for duplicate files, including in subdirectories.
 	"""
-
+	file_list = get_file_list(search_dir)
 	report = ""
-	file_list = os.listdir(search_dir)
-	i = 0
 
+	i = 0
 	while i < len(file_list):
-		file_i_name = file_list[i]
-		file_i_path = os.path.join(search_dir, file_i_name)
+		file_i = file_list[i]
 
 		# only search the remaining portion of the list
 		for j in range(i + 1, len(file_list)):
-			file_j_name = file_list[j]
-			file_j_path = os.path.join(search_dir, file_j_name)
+			file_j = file_list[j]
 
-			if filecmp.cmp(file_i_path, file_j_path):
-				report += f"\n{file_i_name} = {file_j_name}"
+			if filecmp.cmp(file_i, file_j):
+				report += f"\n{file_i} = {file_j}"
 
 		i += 1
 
@@ -87,25 +86,34 @@ def compare_dir_duplicates(search_dir):
 	return report.lstrip("\n")
 
 def compare_dirs_similarities(path_1, path_2):
-	report = compare_dirs_similarities_recurse(path_1, path_2).lstrip("\n")
+	"""
+	Finds identical files between path_1 and path_2, even if they don't have
+	the same name.
+	"""
+	path_1_list = get_file_list(path_1)
+	path_2_list = get_file_list(path_2)
+	report = ""
+
+	for file_1 in path_1_list:
+
+		for file_2 in path_2_list:
+
+			if filecmp.cmp(file_1, file_2):
+				report += f"\n{file_1} = {file_2}"
 
 	if report == "":
 		report = "The directories have nothing in common."
 
-	return report
+	return report.lstrip("\n")
 
-def compare_dirs_similarities_recurse(path_1, path_2):
-	path_1_list = os.listdir(path_1)
-	path_2_list = os.listdir(path_2)
-	report = ""
+def get_file_list(directory):
+	"""
+	Walks the directory tree and returns a list of absolute paths to all files.
+	"""
+	file_list = []
 
-	for item in path_1_list:
-		item_1_path = os.path.join(path_1, item)
-		item_2_path = os.path.join(path_2, item)
+	for root, dirs, files in os.walk(directory):
+		for f in files:
+			file_list.append(os.path.join(root, f))
 
-		if os.path.isfile(item_1_path) and os.path.isfile(item_2_path) and filecmp.cmp(item_1_path, item_2_path):
-			report += "\n" + item_1_path + " = " + item_2_path
-		elif os.path.isdir(item_1_path) and os.path.isdir(item_2_path):
-			report += compare_dirs_similarities_recurse(item_1_path, item_2_path) # recurse
-
-	return report
+	return file_list

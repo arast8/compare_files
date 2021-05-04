@@ -1,9 +1,12 @@
 # Author: Andrew Rast
-# Date: 03/02/2021
+# Date: 05/03/2021
+#
+# GUI for comparing files and directories
 
+import threading
 import wx
-from DirPickerDropTarget import DirPickerDropTarget
 from comparison_algorithms import *
+from DirPickerDropTarget import DirPickerDropTarget
 
 class ComparisonApp(wx.App):
 	OperationTypeChoices = ["Similarities", "Differences"]
@@ -28,16 +31,16 @@ class ComparisonApp(wx.App):
 
 		self.Picker2 = wx.DirPickerCtrl(main_panel)
 		self.Picker2.SetDropTarget(DirPickerDropTarget(self.Picker2))
-		main_panel.Sizer.Add(self.Picker2, flag=wx.ALL|wx.EXPAND, border=20)
+		main_panel.Sizer.Add(self.Picker2, flag=wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND, border=20)
 
 		self.RadioBox = wx.RadioBox(main_panel, choices=self.OperationTypeChoices)
 		main_panel.Sizer.Add(self.RadioBox, flag=wx.LEFT, border=20)
 
 		compare_button = wx.Button(main_panel, label="Compare")
 		main_panel.Sizer.Add(compare_button, flag=wx.ALIGN_CENTER_HORIZONTAL)
-		compare_button.Bind(event=wx.EVT_BUTTON, handler=self.compare)
+		compare_button.Bind(event=wx.EVT_BUTTON, handler=self.start_thread)
 
-		self.Log = wx.TextCtrl(main_panel, style=wx.TE_MULTILINE)
+		self.Log = wx.TextCtrl(main_panel, style=wx.TE_MULTILINE|wx.TE_READONLY)
 		main_panel.Sizer.Add(self.Log, proportion=1, flag=wx.ALL|wx.EXPAND, border=20)
 
 		# Make stuff visible
@@ -46,11 +49,17 @@ class ComparisonApp(wx.App):
 
 		return True
 
-	def compare(self, event_handler):
+	def start_thread(self, event_handler):
+		self.thread = threading.Thread(target=self.compare)
+		self.thread.start()
+
+	def compare(self):
 		path_1 = self.Picker1.Path
 		path_2 = self.Picker2.Path
 		operation_type = self.OperationTypeChoices[self.RadioBox.Selection]
 		result = ""
+
+		self.Log.SetValue("...")
 
 		if os.path.isfile(path_1) and os.path.isfile(path_2):
 			result = compare_files(path_1, path_2)
